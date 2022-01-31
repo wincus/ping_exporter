@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-ping/ping"
 	"github.com/prometheus/client_golang/prometheus"
@@ -27,6 +28,7 @@ func (i *stringSlice) Set(value string) error {
 func main() {
 	metricsAddr := flag.String("metrics.addr", ":9137", "address for ping exporter")
 	metricsPath := flag.String("metrics.path", "/metrics", "URL path for surfacing collected metrics")
+	interval := flag.Duration("ping.interval", time.Second, "wait time between each ping")
 
 	var pingHosts stringSlice
 	flag.Var(&pingHosts, "ping.host", "host to ping, can be repeated (-ping.host=1.1.1.1 -ping.host=google.com ...)")
@@ -40,6 +42,7 @@ func main() {
 	var pingers []*ping.Pinger
 	for _, host := range pingHosts {
 		pinger := ping.New(host)
+		pinger.Interval = *interval
 		pingers = append(pingers, pinger)
 
 		go func() {
